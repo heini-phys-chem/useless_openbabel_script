@@ -3,11 +3,77 @@
 #include <iostream>                
 #include <string.h>                
 #include <fstream>                 
+#include <vector>
+#include <getopt.h>
                                    
 #include <openbabel/babelconfig.h> 
 #include <openbabel/base.h>        
 #include <openbabel/mol.h>         
 #include <openbabel/obconversion.h>
+
+struct Option {
+  std::string f_in;
+  std::string format_in;
+  std::string format_out;
+};
+
+Option get_options (int argc, char **argv) {
+  int c;
+
+  Option opts;
+
+  while (1) {
+    static struct option long_options[] = {
+      {"f_in", required_argument, 0, 'a'},
+      {"format_in", required_argument, 0, 'b'},
+      {"format_out", required_argument, 0, 'c'}
+    };
+
+    int option_index = 0;
+
+    c = getopt_long(argc, argv, "a:b:c:", long_options, &option_index);
+
+    if (c == -1)
+      break;
+
+    switch (c) {
+
+      case 0:
+        if (long_options[option_index].flag != 0) break;
+      break;
+
+      case 'a':
+        opts.f_in = optarg;
+      case 'b':
+        opts.format_in = optarg;
+      case 'c':
+        opts.format_out = optarg;
+    }
+  }
+
+  if (optind < argc) {
+    printf("non-option ARGV-elements: ");
+    while (optind < argc)
+      printf("%s ", argv[optind++]);
+    putchar ('\n');
+  }
+
+  if (opts.f_in.compare("") == 0) {
+    printf("ERROR: no molecule specified.\n");
+    exit(0);
+  }
+  if (opts.format_in.compare("") == 0) {
+    printf("ERROR: no input format specified.\n");
+    exit(0);
+  }
+  if (opts.format_out.compare("") == 0) {
+    printf("ERROR: no output format specified.\n");
+    exit(0);
+  }
+
+  return opts;
+
+}
 
 
 OpenBabel::OBMol readfile(std::string filename, std::string InFormat) {
@@ -49,22 +115,12 @@ std::string get_f_out(std::string f_in, std::string format_out) {
 
 int main(int argc, char *argv[]) {
 
-  char *cmd1 = argv[1];
-  char *cmd2 = argv[2];
-  char *cmd3 = argv[3];
+  Option opts = get_options(argc, argv);
 
-  std::string f_in;
-  std::string format_in;
-  std::string format_out;
-
-  f_in       += cmd1;
-  format_in  += cmd2;
-  format_out += cmd3;
-
-  std::string f_out = get_f_out(f_in, format_out);
+  std::string f_out = get_f_out(opts.f_in, opts.format_out);
 
   //std::cout << f_in << " " << format_in << " " << format_out << std::endl;
-  OpenBabel::OBMol mol = readfile(f_in, format_in);
-  writefile(mol, f_out, format_out);
+  OpenBabel::OBMol mol = readfile(opts.f_in, opts.format_in);
+  writefile(mol, f_out, opts.format_out);
 
 }
