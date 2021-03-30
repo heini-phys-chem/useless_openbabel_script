@@ -5,6 +5,7 @@
 #include <fstream>                 
 #include <vector>
 #include <getopt.h>
+#include <unistd.h>
                                    
 #include <openbabel/babelconfig.h> 
 #include <openbabel/base.h>        
@@ -117,10 +118,21 @@ int main(int argc, char *argv[]) {
 
   Option opts = get_options(argc, argv);
 
+  char pwd[256];
+
+  getcwd(pwd, 256);
+
+  std::string pwd_str(pwd);
+
   std::string f_out = get_f_out(opts.f_in, opts.format_out);
+  std::string fout = pwd_str + "/" + f_out;
+  std::string fin = pwd_str + "/" + opts.f_in;
+
+//  std::cout << fin << std::endl;
+//  std::cout << fout << std::endl;
 
   //std::cout << f_in << " " << format_in << " " << format_out << std::endl;
-  OpenBabel::OBMol mol = readfile(opts.f_in, opts.format_in);
-  writefile(mol, f_out, opts.format_out);
+  OpenBabel::OBMol mol = readfile(fin, opts.format_in);
+  writefile(mol, fout, opts.format_out);
 
 }
