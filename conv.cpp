@@ -135,4 +135,6 @@ int main(int argc, char *argv[]) {
   OpenBabel::OBMol mol = readfile(fin, opts.format_in);
   writefile(mol, fout, opts.format_out);
 
+  std::cout << " [+] " << fout << std::endl;
+
 }
